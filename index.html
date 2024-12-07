@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Corações Interativos</title>
+
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+    button { background-color: #ff6961; color: white; padding: 15px 25px; font-size: 20px; border-radius: 5px; cursor: pointer; }
+    button:hover { background-color: #ff5c5c; }
+    #heartDisplay { font-size: 50px; color: #ff6961; margin-top: 20px; }
+  </style>
+</head>
+
+<body>
+  <h1>Deixe seu ❤</h1>
+  <button id="addHeartButton">Adicionar Coração</button>
+  <div id="heartDisplay"></div>
+
+  <!-- Firebase v8 (deve ser carregado antes do JavaScript principal) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+  <!-- Configuração e inicialização do Firebase -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDfin_CfItytdmNRdMIMPHJJnAyE6b4ueY",
+      authDomain: "botao-clique.firebaseapp.com",
+      databaseURL: "https://botao-clique-default-rtdb.firebaseio.com",
+      projectId: "botao-clique",
+      storageBucket: "botao-clique.appspot.com",
+      messagingSenderId: "845244289529",
+      appId: "1:845244289529:web:e03f2de317e70218b56d28",
+      measurementId: "G-8XMC32PGQY"
+    };
+
+    // Inicializa o Firebase
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+  <!-- JavaScript principal -->
+  <script>
+    // Verifica se o usuário já deu um coração
+    if (localStorage.getItem("heartGiven") === "true") {
+      document.getElementById("addHeartButton").disabled = true; // Desativa o botão se já deu coração
+      document.getElementById("addHeartButton").innerText = "Você já deu um coração!";
+    }
+
+    // Função para adicionar um coração no Firebase
+    function addHeart() {
+      const heartsRef = firebase.database().ref("hearts");
+
+      heartsRef.once('value', (snapshot) => {
+        let currentValue = snapshot.val() || 0;
+        currentValue += 1;
+        heartsRef.set(currentValue);  // Salva a quantidade de corações no Firebase
+      });
+
+      // Registra no localStorage para que o usuário não possa dar mais corações
+      localStorage.setItem("heartGiven", "true");
+
+      // Atualiza o botão e desativa-o
+      document.getElementById("addHeartButton").disabled = true;
+      document.getElementById("addHeartButton").innerText = "Você já deu um coração!";
+    }
+
+    // Atualiza a exibição de corações
+    function updateHeartDisplay() {
+      const heartsRef = firebase.database().ref("hearts");
+      heartsRef.on("value", (snapshot) => {
+        const heartCount = snapshot.val() || 0;
+        document.getElementById('heartDisplay').innerText = '❤ '.repeat(heartCount);
+      });
+    }
+
+    // Inicia a atualização de corações
+    updateHeartDisplay();
+
+    // Vinca a função de adicionar coração ao botão
+    document.getElementById("addHeartButton").onclick = addHeart;
+  </script>
+</body>
+</html>
